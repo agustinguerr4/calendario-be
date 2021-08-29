@@ -1,15 +1,14 @@
 'use strict'
 
 import { makeExecutableSchema } from 'graphql-tools'
-import { resolvers } from './resolvers'
+import { resolvers } from '../resolvers/resolvers'
 
 const typeDefs = `
 type Query {
     Users: [User!]!
     Ambientes: [Ambiente!]!
     Plantas: [Planta!]!
-    LogsA: [LogA!]!
-    LogsP: [LogP!]!
+    Logs: [Log!]!
     login(email: String!, password: String!): AuthData!
 }
 
@@ -36,7 +35,7 @@ type Ambiente {
     tiempo: Int!
     user: User!
     plantas: [Planta!]
-    logs: [LogA!]
+    logs: [Log!]
 }
 
 type Planta {
@@ -52,28 +51,19 @@ type Planta {
     ratio: String
     floracion: Int
     comentario: String
-    logs: [LogP!]
+    logs: [Log!]
 }
 
-type LogA {
+type Log {
     _id: ID!
     nombre: String!
     tipo: Int!
     fecha: String!
     comentario: String!
-    recurrencia: Boolean
-    id_parent: Ambiente!
+    recurrencia: Bool
 }
 
-type LogP {
-    _id: ID!
-    nombre: String!
-    tipo: Int!
-    fecha: String!
-    comentario: String!
-    recurrencia: Boolean
-    id_parent: Planta!
-}
+
 
 input UserInput {
     firstName: String!
@@ -93,6 +83,7 @@ input PlantaInput {
     nombre: String! 
     origen: Int!
     etapa: Int!
+    ambiente: Ambiente!
     raza: String
     banco: String
     tipo: Int
@@ -102,15 +93,6 @@ input PlantaInput {
     comentario: String
 }
 
-input LogInput {
-    nombre: String!
-    tipo: Int!
-    id_parent: String
-    fecha: String
-    comentario: String
-    recurrencia: Boolean
-
-}
 
 
 type Mutation {
@@ -125,15 +107,6 @@ type Mutation {
     createPlanta(input: PlantaInput): Planta
     deletePlanta(_id: ID): Planta
     updatePlanta(_id: ID, input: PlantaInput): Planta
-
-    createLogA(input: LogInput): LogA
-    deleteLogA(_id: ID): LogA
-    updateLogA(_id: ID, input: LogInput): LogA
-
-
-    createLogP(input: LogInput): LogP
-    deleteLogP(_id: ID): LogP
-    updateLogP(_id: ID, input: LogInput): LogP
 }
 `
 
