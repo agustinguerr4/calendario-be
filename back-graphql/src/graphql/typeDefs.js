@@ -1,50 +1,48 @@
-'use strict'
+import { gql } from 'apollo-server'
 
-import { makeExecutableSchema } from 'graphql-tools'
-import { resolvers } from './resolvers'
-
-const typeDefs = `
+module.exports = gql`
 type Query {
-    Users: [User!]!
-    Ambientes: [Ambiente!]!
-    Plantas: [Planta!]!
-    LogsA: [LogA!]!
-    LogsP: [LogP!]!
-    login(email: String!, password: String!): AuthData!
+    Users: [User]!
+
+    Ambientes: [Ambiente]
+    getMisAmbientes(id: String!): [Ambiente]!
+    getAmbientePorId(id: String!): Ambiente
+
+    Plantas: [Planta]
+    LogsA: [LogA]!
+    LogsP: [LogP]!
+
 }
 
-type AuthData {
-    userId: ID!
-    token: String!
-    tokenExpiration: Int!
-}
 
 type User {
     _id: ID!
-    firstName: String
-    lastName:  String
-    age:       Int
+    username: String
+    # age:       Int
     email: String
     password: String
+    token: String
     ambientes: [Ambiente!]
+    createdAt: String
 }
 
 type Ambiente {
     _id: ID!
-    nombre: String!
-    tipo:   Int!
-    tiempo: Int!
-    user: User!
+    nombre: String
+    tipo:   Int
+    tiempo: Int
+    user: User
     plantas: [Planta!]
     logs: [LogA!]
 }
 
 type Planta {
     _id: ID!
-    nombre: String!
-    origen: Int!
-    etapa: Int!
-    ambiente: Ambiente!
+    nombre: String
+    origen: Int
+    etapa: Int
+    ambiente: Ambiente
+    user: User
     raza: String
     banco: String
     tipo: Int
@@ -56,30 +54,35 @@ type Planta {
 }
 
 type LogA {
-    _id: ID!
-    nombre: String!
-    tipo: Int!
-    fecha: String!
-    comentario: String!
+    _id: ID
+    nombre: String
+    tipo: Int
+    fecha: String
+    comentario: String
     recurrencia: Boolean
     id_parent: Ambiente!
 }
 
 type LogP {
-    _id: ID!
-    nombre: String!
-    tipo: Int!
-    fecha: String!
-    comentario: String!
+    _id: ID
+    nombre: String
+    tipo: Int
+    fecha: String
+    comentario: String
     recurrencia: Boolean
     id_parent: Planta!
 }
 
-input UserInput {
-    firstName: String!
-    lastName:  String!
-    age:       Int!
+input UserInputRegister {
+    username: String!
+    # age:       Int!
     email: String!
+    password: String!
+    confirmPassword: String!
+}
+
+input UserInputLogin {
+    username: String!
     password: String!
 }
 
@@ -93,6 +96,7 @@ input PlantaInput {
     nombre: String! 
     origen: Int!
     etapa: Int!
+    ambiente: String
     raza: String
     banco: String
     tipo: Int
@@ -109,22 +113,22 @@ input LogInput {
     fecha: String
     comentario: String
     recurrencia: Boolean
-
 }
 
 
 type Mutation {
-    createUser(input: UserInput): User
+    createUser(input: UserInputRegister): User
+    loginUser(input: UserInputLogin): User!
     deleteUser(_id: ID): User
-    updateUser(_id: ID, input: UserInput): User
+    updateUser(_id: ID, input: UserInputRegister): User
 
     createAmbiente(input: AmbienteInput): Ambiente
     deleteAmbiente(_id: ID): Ambiente
     updateAmbiente(_id: ID, input: AmbienteInput): Ambiente
 
     createPlanta(input: PlantaInput): Planta
-    deletePlanta(_id: ID): Planta
-    updatePlanta(_id: ID, input: PlantaInput): Planta
+    deletePlanta(_id: ID!): Planta
+    updatePlanta(_id: ID!, input: PlantaInput!): Planta
 
     createLogA(input: LogInput): LogA
     deleteLogA(_id: ID): LogA
@@ -137,7 +141,3 @@ type Mutation {
 }
 `
 
-export const schema = makeExecutableSchema({
-    typeDefs,
-    resolvers
-})
