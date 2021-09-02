@@ -31,7 +31,6 @@ module.exports.validateRegisterInput = (
     // if (age < 18) {
     //     errors.age = 'Debes ser mayor de 18 años para registarte.';
     // }
-    console.log("Validada la cosa, los errores son: ",errors)
     return {
         errors,
         valid: Object.keys(errors).length < 1

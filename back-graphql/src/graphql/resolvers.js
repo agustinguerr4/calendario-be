@@ -29,7 +29,6 @@ export const resolvers = {
     Query: {
         async Users(_, req, context) {
             const auth = checkAuth(context)
-            console.log("req es: ",req)
             if (auth.id) {
                 const users = await User.find()
                 users.forEach(e => {
@@ -128,7 +127,7 @@ export const resolvers = {
         // USUARIOS
         // Registro
         async createUser(_, { input }, context, info) {
-            console.log(input)
+
             const { valid, errors } = validateRegisterInput(
                 input.username,
                 // input.age,
@@ -136,7 +135,7 @@ export const resolvers = {
                 input.password,
                 input.confirmPassword)
 
-            console.log("hasta aca errores:", errors)
+
 
             if (!valid) {
                 return new Error(Object.values(errors))

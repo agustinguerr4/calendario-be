@@ -5,9 +5,9 @@ import 'dotenv/config'
 
 module.exports = (context) => {
     const authHeader = context.headers.authorization;
-    console.log("headers: ",context.headers)
+
     if (authHeader) {
-        const token = authHeader.split('Bearer ')[1];
+        const token = authHeader.split('Bearer ')[1].split(', ')[0];
         if (token) {
             try {
                 const user = jwt.verify(token, process.env.SECRET_KEY);
