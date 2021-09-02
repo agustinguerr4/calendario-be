@@ -8,66 +8,106 @@ import LogP from '../models/LogP'
 import mongoose from 'mongoose'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
-import { SECRET_KEY } from '../../config'
+
 import { validateRegisterInput, validateLoginInput } from '../util/validator'
 import { AuthenticationError } from 'apollo-server'
 import checkAuth from '../util/checkAuth'
 import Mongoose from "mongoose";
+import 'dotenv/config'
 
 const { UserInputError } = require('apollo-server');
 
-const userID = "612b98707a16c9835286b3b3"
 
 function generateToken(user) {
     return jwt.sign({
         id: user.id,
         email: user.email,
         username: user.username
-    }, SECRET_KEY, { expiresIn: '1h' })
+    }, process.env.SECRET_KEY, { expiresIn: '1h' })
 }
 export const resolvers = {
     Query: {
-        async Users() {
-            const users = await User.find()
+        async Users(_, req, context) {
+            const auth = checkAuth(context)
+            console.log("req es: ",req)
+            if (auth.id) {
+                const users = await User.find()
+                users.forEach(e => {
+                    e.password = null
+                })
 
-            users.forEach(e => {
-                e.password = null
-            })
-
-            return users
+                return users
+            } else {
+                return new Error("No estás logueado.")
+            }
         },
         async Ambientes(_, nothing, context) {
             const auth = checkAuth(context)
-            const userID = new Mongoose.Types.ObjectId(auth.id)
-            return await Ambiente.find({ user: userID }).sort({ createdAt: -1 })
-        },
-        async Plantas(_, nothing, context) {
-            // const auth = checkAuth(context)
-            // const plantas = await Planta.find()
-            // return plantas
-        },
-        async LogsA() {
-            return await LogsA.find()
-        },
-        async LogsP() {
-            return await LogsP.find()
-        },
-        // Queries importantes
-        // Ambientes
-        async getAmbientePorId(_, { id }) {
-            try {
-                const ambiente = Ambiente.findById(id)
-                return ambiente
-            } catch (err) {
-                return error
+            if (auth.id) {
+                const userID = new Mongoose.Types.ObjectId(auth.id)
+                return await Ambiente.find({ user: userID }).sort({ createdAt: -1 })
+            } else {
+                return new Error("No estás logueado.")
             }
         },
-        async getMisAmbientes(_, { userID }) {
-            try {
-                const ambientes = Ambiente.find({ user: userID })
-                return ambientes
-            } catch (err) {
-                return err
+        async Plantas(_, nothing, context) {
+            const auth = checkAuth(context)
+            if (auth.id) {
+                const userID = new Mongoose.Types.ObjectId(auth.id)
+                // return await Ambiente.find({ user: userID }).sort({ createdAt: -1 })
+                return await Planta.find()
+            } else {
+                return new Error("No estás logueado.")
+            }
+        },
+        async LogsA(_, req, context) {
+            const auth = checkAuth(context)
+            if (auth.id) {
+                const userID = new Mongoose.Types.ObjectId(auth.id)
+                // return await Ambiente.find({ user: userID }).sort({ createdAt: -1 })
+                return await LogA.find()
+            } else {
+                return new Error("No estás logueado.")
+            }
+        },
+        async LogsP(_, req, context) {
+            const auth = checkAuth(context)
+            if (auth.id) {
+                const userID = new Mongoose.Types.ObjectId(auth.id)
+                // return await Ambiente.find({ user: userID }).sort({ createdAt: -1 })
+                return await LogP.find()
+            } else {
+                return new Error("No estás logueado.")
+            }
+        },
+        // Queries importantes
+
+        // Ambientes
+        async getAmbientePorId(_, { id }, context) {
+            const auth = checkAuth(context)
+            if (auth.id) {
+                try {
+                    const ambiente = Ambiente.findById(id)
+                    return ambiente
+                } catch (err) {
+                    return error
+                }
+            } else {
+                return new Error("No estás logueado.")
+            }
+        },
+        async getMisAmbientes(_, { userID }, context) {
+
+            const auth = checkAuth(context)
+            if (auth.id) {
+                try {
+                    const ambientes = Ambiente.find({ user: userID })
+                    return ambientes
+                } catch (err) {
+                    return err
+                }
+            } else {
+                return new Error("No estás logueado.")
             }
         }
     },
@@ -96,7 +136,7 @@ export const resolvers = {
                 input.password,
                 input.confirmPassword)
 
-            console.log("hasta aca errores:",errors)
+            console.log("hasta aca errores:", errors)
 
             if (!valid) {
                 return new Error(Object.values(errors))

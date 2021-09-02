@@ -18,7 +18,6 @@ type Query {
 type User {
     _id: ID!
     username: String
-    # age:       Int
     email: String
     password: String
     token: String
@@ -75,7 +74,6 @@ type LogP {
 
 input UserInputRegister {
     username: String!
-    # age:       Int!
     email: String!
     password: String!
     confirmPassword: String!

@@ -1,14 +1,16 @@
 import jwt from 'jsonwebtoken'
-import { SECRET_KEY } from '../../config'
 import { AuthenticationError } from 'apollo-server'
+import 'dotenv/config'
+
 
 module.exports = (context) => {
     const authHeader = context.headers.authorization;
+    console.log("headers: ",context.headers)
     if (authHeader) {
         const token = authHeader.split('Bearer ')[1];
         if (token) {
             try {
-                const user = jwt.verify(token, SECRET_KEY);
+                const user = jwt.verify(token, process.env.SECRET_KEY);
                 return user
             } catch (err) {
                 return new AuthenticationError("El token es inválido o ha expirado.")
