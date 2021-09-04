@@ -5,7 +5,7 @@ type Query {
     Users: [User]!
 
     Ambientes: [Ambiente]
-    getMisAmbientes(id: String!): [Ambiente]!
+    getMisAmbientes: [Ambiente]!
     getAmbientePorId(id: String!): Ambiente
 
     Plantas: [Planta]

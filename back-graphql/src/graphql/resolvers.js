@@ -95,12 +95,13 @@ export const resolvers = {
                 return new Error("No estás logueado.")
             }
         },
-        async getMisAmbientes(_, { userID }, context) {
+        async getMisAmbientes(_, req, context) {
 
             const auth = checkAuth(context)
+            console.log("buscare los ambientes de: ",auth.id)
             if (auth.id) {
                 try {
-                    const ambientes = Ambiente.find({ user: userID })
+                    const ambientes = Ambiente.find({ user: auth.id })
                     return ambientes
                 } catch (err) {
                     return err
@@ -169,7 +170,9 @@ export const resolvers = {
         // Login
         async loginUser(_, { input }) {
             const { errors, valid } = validateLoginInput(input.username, input.password)
+            console.log("tengo errores: ",errors)
             if (!valid) {
+
                 return new UserInputError("Errores:", { errors })
             }
             let user = await User.findOne({ username: input.username })
@@ -184,6 +187,7 @@ export const resolvers = {
             const match = await bcrypt.compare(input.password, user.password)
 
             if (!match) {
+                console.log("tengo errores en valid: ",errors)
                 errors.general = "La contraseña es incorrecta."
                 return new UserInputError("Error de credenciales", { errors })
             }
@@ -200,6 +204,9 @@ export const resolvers = {
         },
         async deleteUser(_, { _id }) {
             // Al eliminar un usuario debo eliminar sus ambientes
+            const ambientes = await Ambiente.find({ user: _id })
+            console.log("Ambientes del usuario: ", ambientes)
+
             return await User.findByIdAndDelete(_id)
         },
         async updateUser(_, { _id, input }) {
@@ -214,7 +221,7 @@ export const resolvers = {
                 user: auth.id,
                 createdAt: new Date().toISOString()
             }
-            const user = await User.findById(userID)
+            const user = await User.findById(auth.id)
             const newAmbiente = new Ambiente(input)
             await newAmbiente.save()
             user.ambientes.push(newAmbiente._id)
